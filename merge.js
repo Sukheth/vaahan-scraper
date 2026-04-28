@@ -62,7 +62,9 @@ function mergeExcelFiles(inputDir, outputFile) {
     }
 
     const titleRow = rows[0][0] || '';
-    const match = titleRow.match(/of\s+(.*?)\s*,\s*(.*?)\s*\(/i);
+    // Use greedy match to grab everything up to the LAST " , State (" pattern
+    // This handles RTOs with commas in their name like "JAGATPURA, JAIPUR ARTO - RJ141 , Rajasthan ()"
+    const match = titleRow.match(/of\s+(.*)\s*,\s+(\S[^(]*?)\s*\(/i);
     let rto = 'UNKNOWN';
     let state = 'UNKNOWN';
     if (match) {
