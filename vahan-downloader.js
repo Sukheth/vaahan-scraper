@@ -637,52 +637,66 @@ async function runJob(config, browser, job, jobIndex, counter) {
 
     console.log(`[state:${job.state}] Starting — ${rtoTargets.length} RTOs`);
 
+    const MAX_ATTEMPTS = 3;
+
     for (const rtoOption of rtoTargets) {
       const index = ++counter.value;
       const rtoCode = parseRtoCode(rtoOption.text);
-      let downloaded = false;
+
+      // Compute the output filename up front so we can check for resume
+      const filename = job.filename
+        ? `${sanitizeFilename(job.filename.replace(/\.xlsx$/i, ''))}.xlsx`
+        : buildFilename(
+            {
+              index,
+              stateCode: stateOption.value,
+              stateName: stateOption.text,
+              rtoCode,
+              rtoLabel: rtoOption.text,
+              type: job.type ?? 'Actual Value',
+              yAxis: job.yAxis,
+              xAxis: job.xAxis,
+              yearType: job.yearType ?? '',
+              year: job.year ?? '',
+            },
+            job.filenameTemplate || config.filenameTemplate
+          );
+      const outputFile = path.join(outputDir, filename);
+
+      // Resume: skip if the file already exists
+      if (fs.existsSync(outputFile)) {
+        console.log(`[${job.state}/${rtoCode}] RTO ${index} of ${rtoTargets.length} — already exists, skipping`);
+        continue;
+      }
 
       console.log(`[${job.state}/${rtoCode}] RTO ${index} of ${rtoTargets.length}…`);
-      for (let attempt = 1; attempt <= 2; attempt++) {
+      let downloaded = false;
+
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
         try {
           await setSelect(page, SELECT_IDS.rto, rtoOption.value, 'RTO');
           await refreshReport(page);
 
-          const filename = job.filename
-            ? `${sanitizeFilename(job.filename.replace(/\.xlsx$/i, ''))}.xlsx`
-            : buildFilename(
-                {
-                  index,
-                  stateCode: stateOption.value,
-                  stateName: stateOption.text,
-                  rtoCode,
-                  rtoLabel: rtoOption.text,
-                  type: job.type ?? 'Actual Value',
-                  yAxis: job.yAxis,
-                  xAxis: job.xAxis,
-                  yearType: job.yearType ?? '',
-                  year: job.year ?? '',
-                },
-                job.filenameTemplate || config.filenameTemplate
-              );
-
-          const outputFile = path.join(outputDir, filename);
           const suggestedFilename = await downloadCurrentReport(page, outputFile);
           console.log(`[${index}] Saved ${outputFile} (site filename: ${suggestedFilename})`);
           downloaded = true;
           break;
         } catch (err) {
-          console.error(`[${job.state}/${rtoCode}] Attempt ${attempt} failed: ${err.message}`);
-          if (attempt < 2) {
+          console.error(`[${job.state}/${rtoCode}] Attempt ${attempt}/${MAX_ATTEMPTS} failed: ${err.message}`);
+          if (attempt < MAX_ATTEMPTS) {
             console.log(`[${job.state}/${rtoCode}] Reloading page and retrying…`);
-            await openReportPage(page, config.url || DEFAULT_URL);
-            ({ stateOption } = await applyJobFilters(page, job));
+            try {
+              await openReportPage(page, config.url || DEFAULT_URL);
+              ({ stateOption } = await applyJobFilters(page, job));
+            } catch (reloadErr) {
+              console.error(`[${job.state}/${rtoCode}] Reload also failed: ${reloadErr.message}`);
+            }
           }
         }
       }
 
       if (!downloaded) {
-        console.error(`[${job.state}/${rtoCode}] Skipped after 2 failed attempts`);
+        console.error(`[${job.state}/${rtoCode}] Skipped after ${MAX_ATTEMPTS} failed attempts`);
       } else if (job.delayMs || config.delayMs) {
         await page.waitForTimeout(job.delayMs ?? config.delayMs);
       }
