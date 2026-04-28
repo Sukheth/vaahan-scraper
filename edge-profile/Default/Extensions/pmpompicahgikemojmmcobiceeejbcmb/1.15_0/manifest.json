@@ -1,0 +1,40 @@
+{
+   "action": {
+      "default_icon": {
+         "16": "icon_button_thinkcell_16.png",
+         "32": "icon_button_thinkcell_32.png"
+      },
+      "default_title": "Create a think-cell chart linked to a Tableau chart or import an image"
+   },
+   "background": {
+      "service_worker": "background.js"
+   },
+   "browser_specific_settings": {
+      "gecko": {
+         "id": "{7166074E-49FE-4BC8-9006-27A0D5F8A6B8}",
+         "strict_min_version": "84.0"
+      }
+   },
+   "description": "Extension for the think-cell application on your Windows PC or Mac. (think-cell installation required)",
+   "externally_connectable": {
+      "matches": [ "*://localhost/*", "https://www.think-cell.com/*" ]
+   },
+   "host_permissions": [ "https://*/", "http://*/" ],
+   "icons": {
+      "128": "icon_button_thinkcell_128.png",
+      "16": "icon_button_thinkcell_16.png",
+      "24": "icon_button_thinkcell_24.png",
+      "32": "icon_button_thinkcell_32.png",
+      "48": "icon_button_thinkcell_48.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuy1vlymlzkfTKoK2nvEbgjCLVQGWpetI7bZh6DbCmLN7yhoW48I0aC4B2VVNZ+rObzojlzXkY+MrG1JPtgqYZuZJhof7JYa2HlX9GcbyrgjlgxfMXsMCezrxA6jHX38l6gcNX0GtesKMxXTY8f+hB0qNDVVmsGi7IsZaThv/8FEF1LDN0AWDCBM3EO/xUg3+TgwFZUoOl3LwqIzEOyZru0tb5Qatpv/oY8JhIrt/O9GlLGw6SDxKzjeoaQLJXDiOVDypENfLu2tV1imzYbL0VMAaHOHligsIczesuJU/bkhBdn/7ge1zvF5tYWgjdnwzpeuO42r89NKScYl0/SdchwIDAQAB",
+   "manifest_version": 3,
+   "name": "think-cell",
+   "permissions": [ "activeTab", "nativeMessaging", "scripting" ],
+   "update_url": "https://edge.microsoft.com/extensionwebstorebase/v1/crx",
+   "version": "1.15",
+   "web_accessible_resources": [ {
+      "matches": [ "*://*/*" ],
+      "resources": [ "inject.js", "checkmark.blob.png" ]
+   } ]
+}

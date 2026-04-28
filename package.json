@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "scripts": {
+    "vahan:download": "node vahan-downloader.js --config vahan-config.json",
+    "vahan:list-rtos": "node vahan-downloader.js --list-rtos AP"
+  },
+  "dependencies": {
+    "playwright": "^1.59.1"
+  }
+}

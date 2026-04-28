@@ -1,0 +1,40 @@
+{
+  "url": "https://vahan.parivahan.gov.in/vahan4dashboard/vahan/view/reportview.xhtml",
+  "channel": "msedge",
+  "headless": true,
+  "outputDir": "./downloads",
+  "delayMs": 1000,
+  "filenameTemplate": "{stateCode}_{rtoCode}_{yAxis}_{xAxis}_{year}",
+  "defaults": {
+    "type": "Actual Value",
+    "yAxis": "Maker",
+    "xAxis": "Month Wise",
+    "yearType": "Calendar Year",
+    "year": "2025",
+    "fuel": [
+      "ELECTRIC(BOV)"
+    ]
+  },
+  "jobs": [
+    {
+      "state": "AP",
+      "rtos": [
+        "Adoni RTO - AP221",
+        "Amalapuram RTA - AP205"
+      ]
+    },
+    {
+      "state": "KA",
+      "allRtos": false,
+      "rtos": [
+        "Bengaluru Central RTO"
+      ],
+      "yAxis": "Fuel",
+      "xAxis": "Month Wise",
+      "year": "2026",
+      "fuel": [
+        "PURE EV"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+   "action": {
+      "default_icon": {
+         "128": "icons/icon128.png",
+         "16": "icons/icon16.png",
+         "48": "icons/icon48.png"
+      }
+   },
+   "background": {
+      "service_worker": "background.js"
+   },
+   "content_scripts": [ {
+      "all_frames": true,
+      "js": [ "contentScript.js" ],
+      "matches": [ "\u003Call_urls>" ]
+   } ],
+   "description": "Monitor pre-defined Source URLs to help organization understand resource utilization and productivity",
+   "host_permissions": [ "\u003Call_urls>", "https://bcgdev.oktapreview.com/*", "https://logon.bcg.com/*" ],
+   "icons": {
+      "128": "icons/icon128.png",
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq2/SVhIOR+IOSYEk8eVQgRfXmV0E1E/Fdlb9/Aj8K/EJsoWYRwpxuk75uppw3d95wAWu9XgMl9rxlQg7hi0yfgFM75s9QBoYNI3si0ioZmy17KpmSpZ4tK9gDNc/m7PyvgYgYqEugdnzZxEnWCjluUPFk5S1JyBnP4bzZ5v4wL0Zb8/HdxKGEQjxPsa6hGzZtHlkIz7Ljbdda7VWtRUFAExLMU+J4Ff0CYMzzSXYVjnPOtZ4vbaxyuhvmEe3DTjOPE0IYZWSZOSWwORmYZsUFciAvNfnz1O8hkP4Y8HwouXoyuCF+C1QX42tPR6I3QfU/ci3LRuy3YUVSVuu01O3EQIDAQAB",
+   "manifest_version": 3,
+   "name": "UsageIQ",
+   "oauth2": {
+      "client_id": "0oa12zg44hbVnGIQd1t8",
+      "redirect_uri": "chrome-extension://jdfmbknbbofaocmpcnddjohklagooffn/callback.html",
+      "scopes": [ "openid", "profile", "email" ]
+   },
+   "permissions": [ "webNavigation", "downloads", "downloads.open", "storage", "cookies", "webRequest", "activeTab", "tabs", "identity" ],
+   "update_url": "https://usageiq.bcg.com/chrome-extension/prod/manifest.xml",
+   "version": "1.1.13",
+   "web_accessible_resources": [ {
+      "matches": [ "\u003Call_urls>" ],
+      "resources": [ "callback.html" ]
+   } ]
+}
