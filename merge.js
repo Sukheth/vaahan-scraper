@@ -6,7 +6,7 @@ const XLSX = require('xlsx');
 
 function mergeExcelFiles(inputDir, outputFile) {
   const files = fs.readdirSync(inputDir)
-    .filter((f) => f.toLowerCase().endsWith('.xlsx') && f !== path.basename(outputFile) && !f.startsWith('combined_'))
+    .filter((f) => f.toLowerCase().endsWith('.xlsx') && !f.startsWith('~$') && f !== path.basename(outputFile) && !f.startsWith('combined_'))
     .map((f) => path.join(inputDir, f))
     .sort();
 
@@ -16,7 +16,40 @@ function mergeExcelFiles(inputDir, outputFile) {
 
   console.log(`Merging ${files.length} file(s) into ${outputFile}…`);
 
-  const allRows = [['State', 'RTO', 'OEM', 'Value']];
+  let isMonthWise = false;
+  let dynamicHeaders = [];
+
+  // Pass 1: Determine structure from the first valid file
+  for (const file of files) {
+    const workbook = XLSX.readFile(file);
+    const sheetName = workbook.SheetNames[0];
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: '' });
+
+    if (rows.length < 5) continue;
+
+    const row1 = rows[1] || [];
+    if (row1.join(' ').toUpperCase().includes('MONTH WISE')) {
+      isMonthWise = true;
+      // Find the row containing the month labels (usually row index 3)
+      for (let i = 1; i < 5; i++) {
+        const val = String(rows[i] && rows[i][2] ? rows[i][2] : '').trim();
+        if (val.length > 0 && !val.toUpperCase().includes('MONTH WISE')) {
+          // Exclude index 0, 1 (SNo, OEM) and the last column (TOTAL)
+          dynamicHeaders = rows[i].slice(2, rows[i].length - 1).map(s => String(s).trim());
+          break;
+        }
+      }
+    }
+    break;
+  }
+
+  const allRows = [
+    isMonthWise 
+      ? ['State', 'RTO', 'OEM', ...dynamicHeaders, 'Total']
+      : ['State', 'RTO', 'OEM', 'Value']
+  ];
+
+  let totalDataCount = 0;
 
   for (const file of files) {
     const workbook = XLSX.readFile(file);
@@ -50,31 +83,37 @@ function mergeExcelFiles(inputDir, outputFile) {
       // Data rows start with a numeric "S No"
       if (!isNaN(parseInt(String(row[0]).trim(), 10))) {
         const oem = String(row[1] || '').trim();
-        
-        // Find the last non-empty column to get the TOTAL value
-        let value = '0';
-        for (let i = row.length - 1; i >= 2; i--) {
-          const val = String(row[i]).trim();
-          if (val !== '') {
-            value = val;
-            break;
-          }
-        }
-        
-        // Skip any stray summary rows
         if (oem.toLowerCase().includes('total') || String(row[0]).toLowerCase().includes('total')) {
             continue;
         }
 
-        allRows.push([state, rto, oem, value]);
+        if (isMonthWise) {
+          const monthVals = [];
+          for (let i = 0; i < dynamicHeaders.length; i++) {
+            monthVals.push(String(row[2 + i] || '0').trim());
+          }
+          // Total is immediately after the last month column
+          const total = String(row[2 + dynamicHeaders.length] || '0').trim();
+          allRows.push([state, rto, oem, ...monthVals, total]);
+        } else {
+          let value = '0';
+          for (let i = row.length - 1; i >= 2; i--) {
+            const val = String(row[i]).trim();
+            if (val !== '') {
+              value = val;
+              break;
+            }
+          }
+          allRows.push([state, rto, oem, value]);
+        }
         dataCount++;
       }
     }
-
+    totalDataCount += dataCount;
     console.log(`  Merged: ${path.basename(file)} (${dataCount} data rows)`);
   }
 
-  if (allRows.length <= 1) {
+  if (totalDataCount === 0) {
     throw new Error('No data rows found across all files');
   }
 
@@ -83,8 +122,8 @@ function mergeExcelFiles(inputDir, outputFile) {
   XLSX.utils.book_append_sheet(wb, ws, 'Combined');
   XLSX.writeFile(wb, outputFile);
 
-  console.log(`Done — ${allRows.length - 1} total data rows → ${outputFile}`);
-  return allRows.length - 1;
+  console.log(`Done — ${totalDataCount} total data rows → ${outputFile}`);
+  return totalDataCount;
 }
 
 // CLI usage: node merge.js <inputDir> <outputFile>
