@@ -2,9 +2,11 @@
   "private": true,
   "scripts": {
     "vahan:download": "node vahan-downloader.js --config vahan-config.json",
-    "vahan:list-rtos": "node vahan-downloader.js --list-rtos AP"
+    "vahan:list-rtos": "node vahan-downloader.js --list-rtos AP",
+    "vahan:ui": "node server.js"
   },
   "dependencies": {
-    "playwright": "^1.59.1"
+    "playwright": "^1.59.1",
+    "xlsx": "^0.18.5"
   }
 }
